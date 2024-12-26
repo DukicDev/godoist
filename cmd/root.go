@@ -24,14 +24,25 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"github.com/DukicDev/godoist/todoist"
+	"log"
 	"os"
 
 	"github.com/spf13/cobra"
 )
 
+var client *todoist.Client
+
 var rootCmd = &cobra.Command{
 	Use:   "godoist",
 	Short: "A CLI for Todoist",
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		token, err := GetApiToken()
+		if err != nil {
+			log.Fatalln("Please set the TODOIST_API_TOKEN environment variable")
+		}
+		client = todoist.NewClient(token)
+	},
 }
 
 func Execute() {

@@ -21,7 +21,7 @@ THE SOFTWARE.
 */
 package main
 
-import "godoist/cmd"
+import "github.com/DukicDev/godoist/cmd"
 
 func main() {
 	cmd.Execute()
