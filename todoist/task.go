@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"sort"
 )
 
 type Task struct {
@@ -31,8 +32,10 @@ func (c *Client) GetTasks(showProjects bool) ([]Task, error) {
 		for i := range tasks {
 			tasks[i].setProject(c)
 		}
-
 	}
+	sort.Slice(tasks, func(i, j int) bool {
+		return tasks[i].Priority < tasks[j].Priority
+	})
 	return tasks, nil
 }
 
