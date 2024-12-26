@@ -54,16 +54,16 @@ func listRun(cmd *cobra.Command, args []string) {
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', 0)
 
 	if showProjects {
-		fmt.Fprintln(w, "ID\tTask\tDescription\tDue Date\tProject")
+		fmt.Fprintln(w, "ID\tPriority\tTask\tDescription\tDue Date\tProject")
 
 		for i, task := range tasks {
-			fmt.Fprintf(w, "%d\t%s\t%s\t%s\t%s\n", i+1, task.ShortContent(taskMaxLength), task.Description, task.GetDate(), task.Project)
+			fmt.Fprintf(w, "%d\t%s\t%s\t%s\t%s\t%s\n", i+1, task.GetPriority(), task.ShortContent(taskMaxLength), task.Description, task.GetDate(), task.Project)
 		}
 	} else {
-		fmt.Fprintln(w, "ID\tTask\tDescription\tDue Date")
+		fmt.Fprintln(w, "ID\tPriority\tTask\tDescription\tDue Date")
 
 		for i, task := range tasks {
-			fmt.Fprintf(w, "%d\t%s\t%s\t%s\n", i+1, task.ShortContent(taskMaxLength), task.Description, task.GetDate())
+			fmt.Fprintf(w, "%d\t%s\t%s\t%s\t%s\n", i+1, task.GetPriority(), task.ShortContent(taskMaxLength), task.Description, task.GetDate())
 		}
 	}
 

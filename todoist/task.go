@@ -17,6 +17,7 @@ type Task struct {
 	Due         Due    `json:"due,omitempty"`
 	ProjectID   string `json:"project_id,omitempty"`
 	Project     string `json:"-"`
+	Priority    int    `json:"priority"`
 }
 
 type Due struct {
@@ -98,13 +99,21 @@ func (t *Task) setProject(c *Client) {
 	}
 }
 
-func (c *Client) CreateTask(content string) error {
+func (c *Client) CreateTask(content string, duedate string, priority int, description string) error {
 	if content == "" {
 		return errors.New("empty task content")
 	}
-	task := Task{
-		Content: content,
+	task := map[string]interface{}{
+		"content":  content,
+		"priority": priority,
+		"due_date": duedate,
 	}
+	// if duedate != "" {
+	// 	task["due_date"] = duedate
+	// }
+	// if description != "" {
+	// 	task["description"] = description
+	// }
 	_, err := c.makeRequest("POST", "tasks", nil, task)
 	if err != nil {
 		return err
@@ -151,4 +160,17 @@ func (c *Client) CloseTask(index int, cacheFile string) (string, error) {
 		return "", err
 	}
 	return tasks[index-1].Content, nil
+}
+
+func (t *Task) GetPriority() string {
+	switch t.Priority {
+	case 2:
+		return "P3"
+	case 3:
+		return "P2"
+	case 4:
+		return "P1"
+	default:
+		return "P4"
+	}
 }
