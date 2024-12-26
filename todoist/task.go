@@ -2,19 +2,24 @@ package todoist
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
-	"sort"
 )
 
 type Task struct {
-	ID          string `json:"id"`
+	ID          string `json:"id,omitempty"`
 	Content     string `json:"content"`
-	Priority    int    `json:"priority,omitempty"`
 	Description string `json:"description,omitempty"`
-	DueDate     string `json:"due_date,omitempty"`
+	Due         Due    `json:"due,omitempty"`
 	ProjectID   string `json:"project_id,omitempty"`
 	Project     string `json:"-"`
+}
+
+type Due struct {
+	Date         string `json:"date"`
+	text         string `json:"string"`
+	is_recurring bool   `json:"is_recurring"`
 }
 
 func (c *Client) GetTasks(showProjects bool) ([]Task, error) {
@@ -33,9 +38,7 @@ func (c *Client) GetTasks(showProjects bool) ([]Task, error) {
 			tasks[i].setProject(c)
 		}
 	}
-	sort.Slice(tasks, func(i, j int) bool {
-		return tasks[i].Priority < tasks[j].Priority
-	})
+
 	return tasks, nil
 }
 
@@ -58,4 +61,18 @@ func (t *Task) setProject(c *Client) {
 		}
 		t.Project = project["name"].(string)
 	}
+}
+
+func (c *Client) CreateTask(content string) error {
+	if content == "" {
+		return errors.New("empty task content")
+	}
+	task := Task{
+		Content: content,
+	}
+	_, err := c.makeRequest("POST", "tasks", task)
+	if err != nil {
+		return err
+	}
+	return nil
 }
