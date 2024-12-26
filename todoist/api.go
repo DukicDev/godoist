@@ -31,7 +31,6 @@ func (client *Client) makeRequest(method, endpoint string, query map[string]stri
 			return nil, err
 		}
 	}
-
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(reqBody))
 	q := req.URL.Query()
 	for k, v := range query {
