@@ -14,6 +14,8 @@ import (
 
 var taskMaxLength int
 var showProjects bool
+var filter string
+var all bool
 
 // listCmd represents the list command
 var listCmd = &cobra.Command{
@@ -36,10 +38,15 @@ func init() {
 	// listCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	listCmd.Flags().IntVarP(&taskMaxLength, "length", "l", 50, "set max length for task string")
 	listCmd.Flags().BoolVar(&showProjects, "show-projects", false, "set show-prjects to list tasks with projects (might take longer)")
+	listCmd.Flags().StringVarP(&filter, "filter", "f", "(today|overdue)", "filter listed tasks according to todoist filters")
+	listCmd.Flags().BoolVarP(&all, "all", "a", false, "show all active tasks")
 }
 
 func listRun(cmd *cobra.Command, args []string) {
-	tasks, err := client.GetTasks(showProjects)
+	if all {
+		filter = ""
+	}
+	tasks, err := client.GetTasks(cacheFile, showProjects, filter)
 	if err != nil {
 		log.Fatalf("error while listing Todos: %v\n", err)
 	}
@@ -50,13 +57,13 @@ func listRun(cmd *cobra.Command, args []string) {
 		fmt.Fprintln(w, "ID\tTask\tDescription\tDue Date\tProject")
 
 		for i, task := range tasks {
-			fmt.Fprintf(w, "%d\t%s\t%s\t%s\t%s\n", i+1, task.ShortContent(taskMaxLength), task.Description, task.Due.Date, task.Project)
+			fmt.Fprintf(w, "%d\t%s\t%s\t%s\t%s\n", i+1, task.ShortContent(taskMaxLength), task.Description, task.GetDate(), task.Project)
 		}
 	} else {
 		fmt.Fprintln(w, "ID\tTask\tDescription\tDue Date")
 
 		for i, task := range tasks {
-			fmt.Fprintf(w, "%d\t%s\t%s\t%s\n", i+1, task.ShortContent(taskMaxLength), task.Description, task.Due.Date)
+			fmt.Fprintf(w, "%d\t%s\t%s\t%s\n", i+1, task.ShortContent(taskMaxLength), task.Description, task.GetDate())
 		}
 	}
 

@@ -5,6 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"os"
+	"sort"
+	"time"
 )
 
 type Task struct {
@@ -22,17 +25,49 @@ type Due struct {
 	is_recurring bool   `json:"is_recurring"`
 }
 
-func (c *Client) GetTasks(showProjects bool) ([]Task, error) {
-	data, err := c.makeRequest("GET", "tasks", nil)
+func (c *Client) GetTasks(cacheFile string, showProjects bool, filter string) ([]Task, error) {
+	var query map[string]string
+	if filter != "" {
+		query = map[string]string{
+			"filter": filter,
+		}
+	} else {
+		query = nil
+	}
+	data, err := c.makeRequest("GET", "tasks", query, nil)
 	if err != nil {
 		return nil, err
 	}
 
 	var tasks []Task
+
+	err = os.WriteFile(cacheFile, data, 0644)
+	if err != nil {
+		log.Printf("Tasks could not be written to log file: %v\n", err)
+	}
+
 	if err := json.Unmarshal(data, &tasks); err != nil {
 		return nil, fmt.Errorf("failed to decode tasks json: %v", err)
 	}
 
+	// Sort Tasks in Ascending order of duedates
+	sort.Slice(tasks, func(i, j int) bool {
+		if tasks[i].Due.Date == "" {
+			return false
+		} else if tasks[j].Due.Date != "" {
+			i, err := time.Parse("2006-1-2", tasks[i].Due.Date)
+			if err != nil {
+				return false
+			}
+			j, err := time.Parse("2006-1-2", tasks[j].Due.Date)
+			if err != nil {
+				return true
+			}
+			return i.Compare(j) == -1
+		} else {
+			return true
+		}
+	})
 	if showProjects {
 		for i := range tasks {
 			tasks[i].setProject(c)
@@ -51,7 +86,7 @@ func (t *Task) ShortContent(maxLength int) string {
 
 func (t *Task) setProject(c *Client) {
 	if t.ProjectID != "" {
-		data, err := c.makeRequest("GET", "projects/"+t.ProjectID, nil)
+		data, err := c.makeRequest("GET", "projects/"+t.ProjectID, nil, nil)
 		if err != nil {
 			log.Printf("error while setting project for task: %v\n error: %v", t, err)
 		}
@@ -70,9 +105,50 @@ func (c *Client) CreateTask(content string) error {
 	task := Task{
 		Content: content,
 	}
-	_, err := c.makeRequest("POST", "tasks", task)
+	_, err := c.makeRequest("POST", "tasks", nil, task)
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+func (t *Task) GetDate() string {
+	if t.Due.Date == "" {
+		return ""
+	}
+	date, err := time.Parse("2006-1-2", t.Due.Date)
+	if err != nil {
+		log.Fatalln(err)
+		return t.Due.Date
+	}
+	y, m, d := time.Now().Date()
+	if date.Year() == y && date.Month() == m && date.Day() == d {
+		return "Today"
+	}
+
+	if date.Compare(time.Now()) == -1 {
+		return "Overdue"
+	}
+	return date.Format("2.1.2006")
+}
+
+func (c *Client) CloseTask(index int, cacheFile string) (string, error) {
+	data, err := os.ReadFile(cacheFile)
+	if err != nil {
+		return "", err
+	}
+	var tasks []Task
+	err = json.Unmarshal(data, &tasks)
+	if err != nil {
+		return "", err
+	}
+	if len(tasks) < index {
+		return "", errors.New("task not found in cache-file")
+	}
+	id := tasks[index-1].ID
+	_, err = c.makeRequest("POST", "tasks/"+id+"/close", nil, nil)
+	if err != nil {
+		return "", err
+	}
+	return tasks[index-1].Content, nil
 }

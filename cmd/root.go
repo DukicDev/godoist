@@ -32,6 +32,7 @@ import (
 )
 
 var client *todoist.Client
+var cacheFile string
 
 var rootCmd = &cobra.Command{
 	Use:   "godoist",
@@ -43,6 +44,7 @@ var rootCmd = &cobra.Command{
 		}
 		client = todoist.NewClient(token)
 	},
+	Run: listRun,
 }
 
 func Execute() {
@@ -58,6 +60,11 @@ func init() {
 	// will be global for your application.
 
 	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.godoist.yaml)")
+	home, err := os.UserHomeDir()
+	if err != nil {
+		log.Fatalln("User home dir could not be found. Pleae set --cache-file")
+	}
+	rootCmd.PersistentFlags().StringVar(&cacheFile, "cache-file", home+string(os.PathSeparator)+".godoist.json", "set path to cache file")
 }
 
 func GetApiToken() (string, error) {

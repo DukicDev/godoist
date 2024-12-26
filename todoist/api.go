@@ -20,7 +20,7 @@ func NewClient(apiToken string) *Client {
 	}
 }
 
-func (client *Client) makeRequest(method, endpoint string, body interface{}) ([]byte, error) {
+func (client *Client) makeRequest(method, endpoint string, query map[string]string, body interface{}) ([]byte, error) {
 	url := baseUrl + endpoint
 	var reqBody []byte
 	var err error
@@ -33,6 +33,11 @@ func (client *Client) makeRequest(method, endpoint string, body interface{}) ([]
 	}
 
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(reqBody))
+	q := req.URL.Query()
+	for k, v := range query {
+		q.Add(k, v)
+	}
+	req.URL.RawQuery = q.Encode()
 	if err != nil {
 		return nil, err
 	}
