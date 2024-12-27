@@ -23,13 +23,13 @@ Godoist is a powerful command-line interface (CLI) tool for interacting with you
 ### **Using Go**
 If you have Go installed, you can easily install Godoist:
 ```bash
-go install github.com/yourusername/godoist@latest
+go install github.com/DukicDev/godoist@latest
 ```
 
 ### **From Source**
 Clone the repository and build the binary:
 ```bash
-git clone https://github.com/yourusername/godoist.git
+git clone https://github.com/DukicDev/godoist.git
 cd godoist
 go build -o godoist
 ```
