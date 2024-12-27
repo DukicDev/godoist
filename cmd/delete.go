@@ -1,6 +1,3 @@
-/*
-Copyright © 2024 NAME HERE <EMAIL ADDRESS>
-*/
 package cmd
 
 import (
@@ -13,33 +10,25 @@ import (
 
 // deleteCmd represents the delete command
 var deleteCmd = &cobra.Command{
-	Use:   "delete",
-	Short: "delete a task",
-	Run:   deleteRun,
+	Use:   "delete <task-id>",
+	Short: "Delete a task",
+	Long: `Delete a task from your Todoist account using its task ID.
+
+The task ID can be obtained by using the "list" command. This command permanently removes the task from your Todoist account.`,
+	Args: cobra.ExactArgs(1), // Enforces exactly one argument
+	Example: `  godoist delete 123
+  godoist delete 42`,
+	Run: deleteRun,
 }
 
 func init() {
 	rootCmd.AddCommand(deleteCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// deleteCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// deleteCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
 func deleteRun(cmd *cobra.Command, args []string) {
-	if len(args) < 1 {
-		log.Fatalln("Argument required. Usage: godoist delete <task-id>")
-	}
-
 	index, err := strconv.Atoi(args[0])
 	if err != nil {
-		log.Fatalf("Argument Error: %v\n", err)
+		log.Fatalf("Invalid task ID: %v. Task ID must be a number.", err)
 	}
 	resp, err := client.DeleteTask(index, cacheFile)
 	if err != nil {

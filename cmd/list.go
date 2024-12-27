@@ -1,6 +1,3 @@
-/*
-Copyright © 2024 NAME HERE <EMAIL ADDRESS>
-*/
 package cmd
 
 import (
@@ -21,25 +18,23 @@ var all bool
 var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List your Todos",
-	Run:   listRun,
+	Long: `List all active tasks from your Todoist account.
+
+You can use filters to narrow down tasks (e.g., today, overdue) and show additional details like project names.
+Tasks can also be shortened to a specific length for better visibility in the terminal.`,
+	Args: cobra.NoArgs,
+	Example: `  godoist list --filter today
+  godoist list --all --show-projects
+  godoist list --length 30`,
+	Run: listRun,
 }
 
 func init() {
 	rootCmd.AddCommand(listCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// listCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// listCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	listCmd.Flags().IntVarP(&taskMaxLength, "length", "l", 50, "set max length for task string")
-	listCmd.Flags().BoolVar(&showProjects, "show-projects", false, "set show-prjects to list tasks with projects (might take longer)")
-	listCmd.Flags().StringVarP(&filter, "filter", "f", "(today|overdue)", "filter listed tasks according to todoist filters")
-	listCmd.Flags().BoolVarP(&all, "all", "a", false, "show all active tasks")
+	listCmd.Flags().IntVarP(&taskMaxLength, "length", "l", 50, "Set max length for task string")
+	listCmd.Flags().BoolVar(&showProjects, "show-projects", false, "Show project names for tasks")
+	listCmd.Flags().StringVarP(&filter, "filter", "f", "(today|overdue)", "Filter tasks using Todoist filters")
+	listCmd.Flags().BoolVarP(&all, "all", "a", false, "Show all active tasks (ignores filters)")
 }
 
 func listRun(cmd *cobra.Command, args []string) {

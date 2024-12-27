@@ -1,6 +1,3 @@
-/*
-Copyright © 2024 NAME HERE <EMAIL ADDRESS>
-*/
 package cmd
 
 import (
@@ -13,32 +10,25 @@ import (
 
 // doneCmd represents the done command
 var doneCmd = &cobra.Command{
-	Use:   "done",
-	Short: "Close a Task",
-	Run:   doneRun,
+	Use:   "done <task-id>",
+	Short: "Mark a task as completed",
+	Long: `Close or mark a task as completed using its task ID.
+
+You can find the task ID by using the "list" command. This command will remove the task from the active list of tasks.`,
+	Args: cobra.ExactArgs(1), // Enforces exactly one argument
+	Example: `  godoist done 123
+  godoist done 42`,
+	Run: doneRun,
 }
 
 func init() {
 	rootCmd.AddCommand(doneCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// doneCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// doneCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
 func doneRun(cmd *cobra.Command, args []string) {
-	if len(args) < 1 {
-		log.Fatalln("Argument required. Usage: godoist done <task-id>")
-	}
 	index, err := strconv.Atoi(args[0])
 	if err != nil {
-		log.Fatalf("error while processing arguments: %v\n", err)
+		log.Fatalf("Invalid task ID: %v. Task ID must be a number.", err)
 	}
 	taskContent, err := client.CloseTask(index, cacheFile)
 	if err != nil {

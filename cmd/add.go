@@ -15,33 +15,26 @@ var dueToday bool
 
 // addCmd represents the add command
 var addCmd = &cobra.Command{
-	Use:   "add",
+	Use:   "add [task name]",
 	Short: "Add a new todo",
-	Run:   addRun,
+	Long: `Add a new todo task with optional settings for duedate, priority, and description.
+
+You can set the duedate with the --due (-d) flag or mark the task as due today with --today (-t).
+The priority can be set with --priority (-p), and additional details can be added with --desc.`,
+	Args:    cobra.ExactArgs(1),
+	Example: "godoist add 'Buy groceries' -d 31.12.2024 -p 2 --desc 'Shopping list'",
+	Run:     addRun,
 }
 
 func init() {
 	rootCmd.AddCommand(addCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// addCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// addCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	addCmd.Flags().StringVarP(&duedate, "duedate", "d", "", "set duedate for task")
-	addCmd.Flags().IntVarP(&priority, "priority", "p", 1, "set priority for task")
-	addCmd.Flags().StringVar(&description, "desc", "", "set description for task")
-	addCmd.Flags().BoolVarP(&dueToday, "today", "t", false, "set duedate for task as today")
+	addCmd.Flags().StringVarP(&duedate, "due", "d", "", "Set duedate for task")
+	addCmd.Flags().IntVarP(&priority, "priority", "p", 1, "Set priority for task")
+	addCmd.Flags().StringVar(&description, "desc", "", "Set description for task")
+	addCmd.Flags().BoolVarP(&dueToday, "today", "t", false, "Set duedate for task as today")
 }
 
 func addRun(cmd *cobra.Command, args []string) {
-	if len(args) < 1 {
-		log.Fatalln("task argument Required. Usage: godoist add 'task name'")
-	}
 	content := args[0]
 	dateString := ""
 	if dueToday {
