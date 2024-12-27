@@ -1,6 +1,7 @@
 package todoist
 
 import (
+	"bufio"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -42,11 +43,6 @@ func (c *Client) GetTasks(cacheFile string, showProjects bool, filter string) ([
 
 	var tasks []Task
 
-	err = os.WriteFile(cacheFile, data, 0644)
-	if err != nil {
-		log.Printf("Tasks could not be written to log file: %v\n", err)
-	}
-
 	if err := json.Unmarshal(data, &tasks); err != nil {
 		return nil, fmt.Errorf("failed to decode tasks json: %v", err)
 	}
@@ -69,10 +65,20 @@ func (c *Client) GetTasks(cacheFile string, showProjects bool, filter string) ([
 			return true
 		}
 	})
+
 	if showProjects {
 		for i := range tasks {
 			tasks[i].setProject(c)
 		}
+	}
+
+	data, err = json.Marshal(tasks)
+	if err != nil {
+		log.Printf("Tasks could not be written to log file: %v\n", err)
+	}
+	err = os.WriteFile(cacheFile, data, 0644)
+	if err != nil {
+		log.Printf("Tasks could not be written to log file: %v\n", err)
 	}
 
 	return tasks, nil
@@ -104,16 +110,11 @@ func (c *Client) CreateTask(content string, duedate string, priority int, descri
 		return errors.New("empty task content")
 	}
 	task := map[string]interface{}{
-		"content":  content,
-		"priority": priority,
-		"due_date": duedate,
+		"content":     content,
+		"priority":    priority,
+		"due_date":    duedate,
+		"description": description,
 	}
-	// if duedate != "" {
-	// 	task["due_date"] = duedate
-	// }
-	// if description != "" {
-	// 	task["description"] = description
-	// }
 	_, err := c.makeRequest("POST", "tasks", nil, task)
 	if err != nil {
 		return err
@@ -160,6 +161,38 @@ func (c *Client) CloseTask(index int, cacheFile string) (string, error) {
 		return "", err
 	}
 	return tasks[index-1].Content, nil
+}
+
+func (c *Client) DeleteTask(index int, cacheFile string) (string, error) {
+	data, err := os.ReadFile(cacheFile)
+	if err != nil {
+		return "", err
+	}
+	var tasks []Task
+	err = json.Unmarshal(data, &tasks)
+	if err != nil {
+		return "", err
+	}
+	if len(tasks) < index {
+		return "", errors.New("task not found in cache-file")
+	}
+	scanner := bufio.NewScanner(os.Stdin)
+	task := tasks[index-1]
+	fmt.Printf("Delete Task: '%s'? (y/n)\n", task.Content)
+	scanner.Scan()
+	del := scanner.Text() == "y"
+	if err := scanner.Err(); err != nil {
+		return "", err
+	}
+	if !del {
+		return fmt.Sprintf("Task: '%s' was not deleted\n", task.Content), nil
+	}
+	_, err = c.makeRequest("DELETE", "tasks/"+task.ID, nil, nil)
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("Task: '%s' was deleted\n", task.Content), nil
+
 }
 
 func (t *Task) GetPriority() string {
