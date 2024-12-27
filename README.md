@@ -1,7 +1,7 @@
 # **Godoist: A Todoist CLI Tool**
 
-[![Go Version](https://img.shields.io/github/go-mod/go-version/yourusername/godoist)](https://golang.org/)  
-[![License](https://img.shields.io/github/license/yourusername/godoist)](LICENSE)
+[![Go Version](https://img.shields.io/github/go-mod/go-version/DukicDev/godoist)](https://golang.org/)  
+[![License](https://img.shields.io/github/license/DukicDev/godoist)](LICENSE)
 
 Godoist is a powerful command-line interface (CLI) tool for interacting with your [Todoist](https://todoist.com/) account. With Godoist, you can manage tasks, mark them as done, delete them, and much more—all from the comfort of your terminal.
 
