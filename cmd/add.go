@@ -11,6 +11,7 @@ import (
 var duedate string
 var priority int
 var description string
+var dueToday bool
 
 // addCmd represents the add command
 var addCmd = &cobra.Command{
@@ -34,6 +35,7 @@ func init() {
 	addCmd.Flags().StringVarP(&duedate, "duedate", "d", "", "set duedate for task")
 	addCmd.Flags().IntVarP(&priority, "priority", "p", 1, "set priority for task")
 	addCmd.Flags().StringVar(&description, "desc", "", "set description for task")
+	addCmd.Flags().BoolVarP(&dueToday, "today", "t", false, "set duedate for task as today")
 }
 
 func addRun(cmd *cobra.Command, args []string) {
@@ -42,7 +44,9 @@ func addRun(cmd *cobra.Command, args []string) {
 	}
 	content := args[0]
 	dateString := ""
-	if duedate != "" {
+	if dueToday {
+		dateString = time.Now().Format("2006-01-02")
+	} else if duedate != "" {
 		date, err := time.Parse("2.1.2006", duedate)
 		if err != nil {
 			log.Fatalf("could not parse duedate: %v\n", err)
