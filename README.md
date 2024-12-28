@@ -52,7 +52,7 @@ go build -o godoist
 ### **Available Commands**
 | Command          | Description                                 | Example                                            |
 |-------------------|---------------------------------------------|----------------------------------------------------|
-| `godoist add`     | Add a new task                             | `godoist add "Buy groceries" -d 2024-12-31 -p 2`  |
+| `godoist add`     | Add a new task                             | `godoist add "Buy groceries" -d 31.12.2024 -p 2`  |
 | `godoist list`    | List tasks                                 | `godoist list --filter today`                     |
 | `godoist done`    | Mark a task as completed                   | `godoist done 1`                                  |
 | `godoist delete`  | Delete a task                              | `godoist delete 1`                                |
